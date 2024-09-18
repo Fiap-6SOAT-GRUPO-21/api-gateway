@@ -12,5 +12,5 @@ module "api_gateway" {
   lb_service_name_api_food = "api-food-service"
   lb_service_port_api_food = 80
   vpc_id                   = data.aws_ssm_parameter.vpc_id.value
-  private_subnet_ids = split(",", data.aws_ssm_parameter.private_subnet_ids.value)
+  private_subnet_ids       = split(",", data.aws_ssm_parameter.private_subnet_ids.value)
 }

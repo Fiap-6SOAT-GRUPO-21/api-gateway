@@ -44,7 +44,7 @@ resource "aws_apigatewayv2_stage" "api_gateway_stage" {
 # Search for the Load Balancer created by the K8s service for api-food micorservice
 data "aws_lb" "eks_api_food" {
   tags = {
-    "kubernetes.io/service-name" = var.lb_service_name_api_food
+    "kubernetes.io/service-name" = "default/${var.lb_service_name_api_food}"
     "kubernetes.io/cluster/${var.project_name}" = "owned"
   }
 }

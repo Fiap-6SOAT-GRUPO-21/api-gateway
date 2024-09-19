@@ -14,3 +14,9 @@ module "api_gateway" {
   vpc_id                   = data.aws_ssm_parameter.vpc_id.value
   private_subnet_ids       = split(",", data.aws_ssm_parameter.private_subnet_ids.value)
 }
+
+resource "aws_ssm_parameter" "api_gateway_endpoint" {
+  name  = "/techchallenge/api_gateway/endpoint"
+  type  = "String"
+  value = module.api_gateway.api_gateway_endpoint
+}

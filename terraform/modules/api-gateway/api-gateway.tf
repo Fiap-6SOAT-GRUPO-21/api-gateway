@@ -33,7 +33,10 @@ resource "aws_apigatewayv2_api" "api" {
   protocol_type = "HTTP"
 }
 
-# Set a default stage
+data "aws_caller_identity" "current" {}
+
+
+# Set a default stage with logging enabled
 resource "aws_apigatewayv2_stage" "api_gateway_stage" {
   api_id      = aws_apigatewayv2_api.api.id
   name        = "$default"
@@ -41,7 +44,24 @@ resource "aws_apigatewayv2_stage" "api_gateway_stage" {
   depends_on = [aws_apigatewayv2_api.api]
 }
 
-# Search for the Load Balancer created by the K8s service for api-food micorservice
+
+data "aws_lambda_function" "authorizer_lambda" {
+  function_name = var.authorizer_lambda_name
+}
+
+# Create authorizer pointing to Lambda
+resource "aws_apigatewayv2_authorizer" "api_authorizer" {
+  name                              = "${var.project_name}-authorizer-by-lambda"
+  api_id                            = aws_apigatewayv2_api.api.id
+  authorizer_uri                    = data.aws_lambda_function.authorizer_lambda.invoke_arn
+  identity_sources = []
+  authorizer_type                   = "REQUEST"
+  authorizer_payload_format_version = "2.0"
+  authorizer_result_ttl_in_seconds  = 0
+  enable_simple_responses           = true
+}
+
+# Search for the Load Balancer created by the K8s service for api-food microservice
 data "aws_lb" "eks_api_food" {
   tags = {
     "kubernetes.io/service-name"                = "default/${var.lb_service_name_api_food}"
@@ -55,7 +75,7 @@ data "aws_lb_listener" "eks_api_food" {
   port              = var.lb_service_port_api_food
 }
 
-# Create the API Gateway HTTP_PROXY integration between the created API and the private load balancer via the VPC Link.
+# Create the API Gateway HTTP_PROXY integration
 resource "aws_apigatewayv2_integration" "api_integration_api_food" {
   api_id                 = aws_apigatewayv2_api.api.id
   integration_type       = "HTTP_PROXY"
@@ -70,12 +90,12 @@ resource "aws_apigatewayv2_integration" "api_integration_api_food" {
   ]
 }
 
-
-# API Gateway route with ANY method
+# API Gateway route with ANY method for the main service
 resource "aws_apigatewayv2_route" "api_gateway_route_api_food" {
   api_id             = aws_apigatewayv2_api.api.id
   route_key          = "ANY /{proxy+}"
   target             = "integrations/${aws_apigatewayv2_integration.api_integration_api_food.id}"
-  authorization_type = "NONE"
+  authorization_type = "CUSTOM"
+  authorizer_id      = aws_apigatewayv2_authorizer.api_authorizer.id
   depends_on = [aws_apigatewayv2_integration.api_integration_api_food]
 }

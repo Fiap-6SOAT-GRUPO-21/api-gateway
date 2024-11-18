@@ -88,6 +88,8 @@ resource "aws_apigatewayv2_authorizer" "api_authorizer" {
   enable_simple_responses           = true
 }
 
+# ####################################### API FOOD #######################################################
+
 # Search for the Load Balancer created by the K8s service for api-food microservice
 data "aws_lb" "eks_api_food" {
   tags = {
@@ -125,4 +127,87 @@ resource "aws_apigatewayv2_route" "api_gateway_route_api_food" {
   authorization_type = "CUSTOM"
   authorizer_id      = aws_apigatewayv2_authorizer.api_authorizer.id
   depends_on         = [aws_apigatewayv2_integration.api_integration_api_food]
+}
+
+# ####################################### API ORDER #######################################################
+
+# Search for the Load Balancer created by the K8s service for api-order microservice
+data "aws_lb" "eks_api_order" {
+  tags = {
+    "kubernetes.io/service-name"                = "default/${var.lb_service_name_api_order}"
+    "kubernetes.io/cluster/${var.project_name}" = "owned"
+  }
+}
+
+# Get the Listener of the Load Balancer created by this Load Balancer
+data "aws_lb_listener" "eks_api_order" {
+  load_balancer_arn = data.aws_lb.eks_api_order.arn
+  port              = var.lb_service_port_api_order
+}
+
+# Create the API Gateway HTTP_PROXY integration
+resource "aws_apigatewayv2_integration" "api_integration_api_order" {
+  api_id                 = aws_apigatewayv2_api.api.id
+  integration_type       = "HTTP_PROXY"
+  integration_uri        = data.aws_lb_listener.eks_api_order.arn
+  integration_method     = "ANY"
+  connection_type        = "VPC_LINK"
+  connection_id          = aws_apigatewayv2_vpc_link.api_vpc_link.id
+  payload_format_version = "1.0"
+  depends_on = [
+    aws_apigatewayv2_vpc_link.api_vpc_link,
+    aws_apigatewayv2_api.api
+  ]
+}
+
+# API Gateway route with ANY method for the main service (/{proxy+})
+resource "aws_apigatewayv2_route" "api_gateway_route_api_order" {
+  api_id             = aws_apigatewayv2_api.api.id
+  route_key          = "ANY /{proxy+}"
+  target             = "integrations/${aws_apigatewayv2_integration.api_integration_api_order.id}"
+  authorization_type = "CUSTOM"
+  authorizer_id      = aws_apigatewayv2_authorizer.api_authorizer.id
+  depends_on         = [aws_apigatewayv2_integration.api_integration_api_order]
+}
+
+
+# ####################################### API PAYMENTS #######################################################
+
+# Search for the Load Balancer created by the K8s service for api-payments microservice
+data "aws_lb" "eks_api_payments" {
+  tags = {
+    "kubernetes.io/service-name"                = "default/${var.lb_service_name_api_payments}"
+    "kubernetes.io/cluster/${var.project_name}" = "owned"
+  }
+}
+
+# Get the Listener of the Load Balancer created by this Load Balancer
+data "aws_lb_listener" "eks_api_payments" {
+  load_balancer_arn = data.aws_lb.eks_api_payments.arn
+  port              = var.lb_service_port_api_payments
+}
+
+# Create the API Gateway HTTP_PROXY integration
+resource "aws_apigatewayv2_integration" "api_integration_api_payments" {
+  api_id                 = aws_apigatewayv2_api.api.id
+  integration_type       = "HTTP_PROXY"
+  integration_uri        = data.aws_lb_listener.eks_api_payments.arn
+  integration_method     = "ANY"
+  connection_type        = "VPC_LINK"
+  connection_id          = aws_apigatewayv2_vpc_link.api_vpc_link.id
+  payload_format_version = "1.0"
+  depends_on = [
+    aws_apigatewayv2_vpc_link.api_vpc_link,
+    aws_apigatewayv2_api.api
+  ]
+}
+
+# API Gateway route with ANY method for the main service (/{proxy+})
+resource "aws_apigatewayv2_route" "api_gateway_route_api_payments" {
+  api_id             = aws_apigatewayv2_api.api.id
+  route_key          = "ANY /{proxy+}"
+  target             = "integrations/${aws_apigatewayv2_integration.api_integration_api_payments.id}"
+  authorization_type = "CUSTOM"
+  authorizer_id      = aws_apigatewayv2_authorizer.api_authorizer.id
+  depends_on         = [aws_apigatewayv2_integration.api_integration_api_payments]
 }

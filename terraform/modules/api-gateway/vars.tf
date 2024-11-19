@@ -3,12 +3,6 @@ variable "project_name" {
   type = string
 }
 
-variable "region" {
-  description = "AWS region to deploy to"
-  default     = "us-east-1"
-  type        = string
-}
-
 variable vpc_id {
   description = "VPC ID from which belogs the subnets"
   type        = string
@@ -21,13 +15,32 @@ variable "private_subnet_ids" {
 
 variable "lb_service_name_api_food" {
   type = string
-  description = "Name of the Load Balancer K8s service that exposes the orders microservices"
+  description = "Name of the Load Balancer K8s service that exposes the orders microservices (api-food)"
 }
-
 
 variable "lb_service_port_api_food" {
   type = number
   description = "Port exposed of the Load Balancer K8s service associated to the orders microservices"
+}
+
+variable "lb_service_name_api_order" {
+  type = string
+  description = "Name of the Load Balancer K8s service that exposes the orders microservices (api-order)"
+}
+
+variable "lb_service_port_api_order" {
+  type = number
+  description = "Port exposed of the Load Balancer K8s service associated to the orders microservices (api-order)"
+}
+
+variable "lb_service_name_api_payments" {
+  type = string
+  description = "Name of the Load Balancer K8s service that exposes the orders microservices (api-payments)"
+}
+
+variable "lb_service_port_api_payments" {
+  type = number
+  description = "Port exposed of the Load Balancer K8s service associated to the orders microservices (api-payments)"
 }
 
 variable "authorizer_lambda_name" {

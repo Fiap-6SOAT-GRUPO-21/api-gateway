@@ -122,7 +122,7 @@ resource "aws_apigatewayv2_integration" "api_integration_api_food" {
 # API Gateway route with ANY method for the main service (/{proxy+})
 resource "aws_apigatewayv2_route" "api_gateway_route_api_food" {
   api_id             = aws_apigatewayv2_api.api.id
-  route_key          = "ANY /{proxy+}"
+  route_key          = "ANY /food/{proxy+}"
   target             = "integrations/${aws_apigatewayv2_integration.api_integration_api_food.id}"
   authorization_type = "CUSTOM"
   authorizer_id      = aws_apigatewayv2_authorizer.api_authorizer.id
@@ -163,7 +163,7 @@ resource "aws_apigatewayv2_integration" "api_integration_api_order" {
 # API Gateway route with ANY method for the main service (/{proxy+})
 resource "aws_apigatewayv2_route" "api_gateway_route_api_order" {
   api_id             = aws_apigatewayv2_api.api.id
-  route_key          = "ANY /{proxy+}"
+  route_key          = "ANY /order/{proxy+}"
   target             = "integrations/${aws_apigatewayv2_integration.api_integration_api_order.id}"
   authorization_type = "CUSTOM"
   authorizer_id      = aws_apigatewayv2_authorizer.api_authorizer.id
@@ -205,7 +205,7 @@ resource "aws_apigatewayv2_integration" "api_integration_api_payments" {
 # API Gateway route with ANY method for the main service (/{proxy+})
 resource "aws_apigatewayv2_route" "api_gateway_route_api_payments" {
   api_id             = aws_apigatewayv2_api.api.id
-  route_key          = "ANY /{proxy+}"
+  route_key          = "ANY /payment/{proxy+}"
   target             = "integrations/${aws_apigatewayv2_integration.api_integration_api_payments.id}"
   authorization_type = "CUSTOM"
   authorizer_id      = aws_apigatewayv2_authorizer.api_authorizer.id
